@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Developer Schedule</title>
+    <style>
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 8px;
+        }
+        th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+<h1 style="text-align: center;">Developer Weekly Schedule</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Day</th>
+        <th>Assigned Developers</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Iterate over the map to render each day and its developers -->
+    <tr th:each="entry : ${schedule}">
+        <td th:text="${entry.key}">Monday</td>
+        <td>
+            <!-- Render the list of developers for the day -->
+            <ul>
+                <li th:each="dev : ${entry.value}" th:text="${dev.name}"></li>
+            </ul>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

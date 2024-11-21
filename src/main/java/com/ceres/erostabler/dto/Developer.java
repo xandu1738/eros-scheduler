@@ -1,4 +1,4 @@
-package com.ceres.erostabler.models;
+package com.ceres.erostabler.dto;
 
 public record Developer(
         String name,

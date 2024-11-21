@@ -1,7 +1,7 @@
-package com.ceres.erostabler;
+package com.ceres.erostabler.services;
 
-import com.ceres.erostabler.models.Developer;
-import com.ceres.erostabler.models.WeekDay;
+import com.ceres.erostabler.dto.Developer;
+import com.ceres.erostabler.dto.WeekDay;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

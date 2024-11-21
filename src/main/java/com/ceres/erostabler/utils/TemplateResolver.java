@@ -1,4 +1,4 @@
-package com.ceres.erostabler;
+package com.ceres.erostabler.utils;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

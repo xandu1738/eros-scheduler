@@ -1,6 +1,6 @@
-package com.ceres.erostabler;
+package com.ceres.erostabler.utils;
 
-import com.ceres.erostabler.models.Developer;
+import com.ceres.erostabler.dto.Developer;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

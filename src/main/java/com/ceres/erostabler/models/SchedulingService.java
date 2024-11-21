@@ -1,7 +1,9 @@
-package com.ceres.erostabler;
+package com.ceres.erostabler.models;
 
-import com.ceres.erostabler.models.Developer;
-import com.ceres.erostabler.models.WeekDay;
+import com.ceres.erostabler.dto.Developer;
+import com.ceres.erostabler.dto.WeekDay;
+import com.ceres.erostabler.services.InitializationService;
+import com.ceres.erostabler.utils.MailService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -63,16 +65,7 @@ public class SchedulingService {
 
         model.addAttribute("schedule", waList);
 
-        try {
-            mailService.sendTemplateMail(
-                    new Developer("Azandu", "xandu1738@gmail.com"),
-                    "Weeks Schedule",
-                    waList,
-                    "email-template"
-            );
-        } catch (MessagingException | UnsupportedEncodingException e) {
-            throw new IllegalStateException(e.getMessage());
-        }
+        sendMailToDevs(devs, waList);
 
         return "schedule";
     }

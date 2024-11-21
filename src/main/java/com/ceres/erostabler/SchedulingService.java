@@ -1,190 +1,163 @@
 package com.ceres.erostabler;
 
+import com.ceres.erostabler.models.Developer;
+import com.ceres.erostabler.models.WeekDay;
+import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SchedulingService {
 
-    private final DeveloperService developerService;
+    private final InitializationService initializationService;
+    private final MailService mailService;
 
-    public SchedulingService(DeveloperService developerService) {
-        this.developerService = developerService;
+    public String scheduleDaysOff(Model model) {
+        // Devs list
+        List<Developer> devs = initializationService.getDevs();
+
+        // Devs Minus Mart
+        List<Developer> jrs = devs.stream()
+                .filter(d -> !d.name().contains("Mart"))
+                .toList();
+
+        // Minus any repetitions
+        List<Developer> developers = new ArrayList<>(new HashSet<>(jrs));
+
+        // Days of the week
+//        List<String> weekdays = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday");
+        List<WeekDay> weekDays = new ArrayList<>(new HashSet<>(initializationService.getWeekDays()));
+
+        if (developers.isEmpty()) {
+            throw new IllegalStateException("Please provide list of staff.");
+        }
+
+        // Map to hold final assignments
+        Map<WeekDay, List<Developer>> weekdayAssignments = weekDays.stream()
+                .collect(Collectors.toMap(day -> day, day -> new ArrayList<>()));
+
+        // Map to track developer counts
+        Map<Developer, Integer> developerAssignments = developers.stream()
+                .collect(Collectors.toMap(dev -> dev, dev -> 0, (existing, replacement) -> existing));
+
+        // Assign each developer at least once
+        enforceMinimumAssignments(developers, weekDays, weekdayAssignments, developerAssignments);
+
+        // Assign remaining slots while enforcing constraints
+        assignRemainingSlots(developers, weekDays, weekdayAssignments, developerAssignments);
+
+        Map<String, List<Developer>> waList = weekdayAssignments.entrySet().stream()
+                .sorted(Comparator.comparing(entry -> entry.getKey().id())) // Sort by weekday ID
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().name(), // Use weekday name as the key
+                        entry -> entry.getValue().stream().distinct().toList(), // Flatten and remove duplicates
+                        (existing, replacement) -> existing, // Merge function (not needed but required by toMap)
+                        LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
+                ));
+
+        model.addAttribute("schedule", waList);
+
+        try {
+            mailService.sendTemplateMail(
+                    new Developer("Azandu", "xandu1738@gmail.com"),
+                    "Weeks Schedule",
+                    waList,
+                    "email-template"
+            );
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            throw new IllegalStateException(e.getMessage());
+        }
+
+        return "schedule";
     }
 
-//    public ResponseEntity<Map<String, List<Developer>>> scheduleOffHours() {
-//        List<Developer> developers = developerService.getDevs();
-//
-//        // Days of the week
-//        List<String> weekdays = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday");
-//
-//        // Map to track assignments for each developer to ensure diversity
-//        Map<String, Map<Developer, Integer>> dayDeveloperCounts = weekdays.stream()
-//                .collect(Collectors.toMap(day -> day, day -> new HashMap<>()));
-//
-//        // Map to hold the final assignments
-//        Map<String, List<Developer>> weekdayAssignments = weekdays.stream()
-//                .collect(Collectors.toMap(day -> day, day -> new ArrayList<>()));
-//
-//        Random random = new Random();
-//
-//        // Helper to shuffle the developers list
-//        Supplier<List<Developer>> shuffledDevelopers = () -> {
-//            List<Developer> shuffled = new ArrayList<>(developers);
-//            Collections.shuffle(shuffled, random);
-//            return shuffled;
-//        };
-//
-/// /        developers.forEach(dev -> {
-/// /
-/// /        });
-//
-//        for (int i = 0; i < 2; i++) { // Each developer should be assigned to 2 days
-//            // Shuffle the developers list at the start of each iteration
-//            List<Developer> reshuffledDevs = new ArrayList<>(developers);
-//            Collections.shuffle(reshuffledDevs);
-//
-//            for (Developer dev : reshuffledDevs) {
-//                // Try to assign the developer to a day
-//                for (String day : weekdays) {
-//                    List<Developer> assignedDevs = weekdayAssignments.get(day);
-//                    Map<Developer, Integer> counts = dayDeveloperCounts.get(day);
-//
-//                    // Check constraints: no more than 3 developers per day and avoid repeating the same day
-//                    if (assignedDevs.size() < 3 && counts.getOrDefault(dev, 0) < 1) {
-//                        assignedDevs.add(dev);
-//                        counts.put(dev, counts.getOrDefault(dev, 0) + 1);
-//                        break; // Move to the next developer once assigned
-//                    }
-//                }
-//            }
-//        }
-//
-//
-//        // Return the assignment as a JSON response
-//        return ResponseEntity.ok(weekdayAssignments);
-//    }
+    private void enforceMinimumAssignments(
+            List<Developer> developers,
+            List<WeekDay> weekdays,
+            Map<WeekDay, List<Developer>> weekdayAssignments,
+            Map<Developer, Integer> developerAssignments) {
 
-//public String scheduleDaysOff(Model model) {
-//    List<Developer> developers = developerService.getDevs();
-//
-//    // Days of the week
-//    List<String> weekdays = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday");
-//
-//    // Map to hold final assignments
-//    Map<String, List<Developer>> weekdayAssignments = weekdays.stream()
-//            .collect(Collectors.toMap(day -> day, day -> new ArrayList<>()));
-//
-//    // Map to track developer counts
-//    Map<Developer, Integer> developerAssignments = developers.stream()
-//            .collect(Collectors.toMap(dev -> dev, dev -> 0));
-//
-//    Random random = new Random();
-//
-//    // Shuffle developers for randomness
-//    List<Developer> shuffledDevelopers = new ArrayList<>(developers);
-//    Collections.shuffle(shuffledDevelopers, random);
-//
-//    // Assign developers to days
-//    for (String day : weekdays) {
-//        for (Developer dev : shuffledDevelopers) {
-//            List<Developer> assignedDevs = weekdayAssignments.get(day);
-//
-//            // Check if developer can be assigned (max 3 per day, not 2 consecutive days, max 2 days total)
-//            if (assignedDevs.size() < 3 &&
-//                    developerAssignments.get(dev) < 2 &&
-//                    !isAssignedToPreviousDay(dev, day, weekdays, weekdayAssignments)) {
-//                assignedDevs.add(dev);
-//                developerAssignments.put(dev, developerAssignments.get(dev) + 1);
-//
-//                // Stop assigning to this day if it has 3 developers
-//                if (assignedDevs.size() == 3) break;
-//            }
-//        }
-//
-//        // If a day ends with no assignments (edge case), force assign random developers
-//        while (weekdayAssignments.get(day).isEmpty()) {
-//            Developer randomDev = shuffledDevelopers.get(random.nextInt(shuffledDevelopers.size()));
-//            List<Developer> assignedDevs = weekdayAssignments.get(day);
-//
-//            if (developerAssignments.get(randomDev) < 2) {
-//                assignedDevs.add(randomDev);
-//                developerAssignments.put(randomDev, developerAssignments.get(randomDev) + 1);
-//            }
-//        }
-//    }
-//
-//    model.addAttribute("schedule",weekdayAssignments);
-//
-//    return "schedule";
-//}
+        int currentDayIndex = 0;
 
-public String scheduleDaysOff(Model model) {
-    List<Developer> developers = developerService.getDevs();
+        for (Developer dev : developers) {
+            WeekDay day = weekdays.get(currentDayIndex % weekdays.size());
+            weekdayAssignments.get(day).add(dev);
+            developerAssignments.put(dev, developerAssignments.get(dev) + 1);
+            currentDayIndex++;
+        }
+    }
 
-    List<String> weekdays = List.of("Monday", "Tuesday", "Wednesday", "Thursday", "Friday");
+    private void assignRemainingSlots(
+            List<Developer> developers,
+            List<WeekDay> weekdays,
+            Map<WeekDay, List<Developer>> weekdayAssignments,
+            Map<Developer, Integer> developerAssignments) {
 
-    // Initialize the assignments
-    Map<String, List<Developer>> schedule = new LinkedHashMap<>();
-    weekdays.forEach(day -> schedule.put(day, new ArrayList<>()));
+        final int MAX_DEVS_PER_DAY = 2;
+        final int MAX_DAYS_PER_DEV = 2;
 
-    Random random = new Random();
+        Random random = new Random();
 
-    // Track the number of assignments per developer
-    Map<Developer, Integer> developerAssignments = new HashMap<>();
-    developers.forEach(dev -> developerAssignments.put(dev, 0));
+        for (WeekDay day : weekdays) {
+            List<Developer> assignedDevs = weekdayAssignments.get(day);
 
-    // Assign developers to each day while ensuring constraints
-    for (String day : weekdays) {
-        Set<Developer> assigned = new HashSet<>();
+            // Continue until the devs per day condition is satisfied
+            while (assignedDevs.size() < MAX_DEVS_PER_DAY) {
+                Developer randomDev = developers.get(random.nextInt(developers.size()));
 
-        while (assigned.size() < 3) {
-            // Shuffle developers and pick one that satisfies constraints
-            List<Developer> shuffledDevelopers = new ArrayList<>(developers);
-            Collections.shuffle(shuffledDevelopers, random);
-
-            for (Developer dev : shuffledDevelopers) {
-                // Ensure no more than 2 assignments per developer
-                if (developerAssignments.get(dev) >= 2) continue;
-
-                // Ensure no consecutive assignments
-                int dayIndex = weekdays.indexOf(day);
-                if (dayIndex > 0) {
-                    String prevDay = weekdays.get(dayIndex - 1);
-                    if (schedule.get(prevDay).contains(dev)) continue;
+                if (canAssign(randomDev, day, weekdayAssignments, developerAssignments, weekdays, MAX_DEVS_PER_DAY, MAX_DAYS_PER_DEV)) {
+                    assignedDevs.add(randomDev);
+                    developerAssignments.put(randomDev, developerAssignments.get(randomDev) + 1);
                 }
-
-                // Assign the developer
-                schedule.get(day).add(dev);
-                developerAssignments.put(dev, developerAssignments.get(dev) + 1);
-                assigned.add(dev);
-
-                // Stop once we have 3 developers for the day
-                if (assigned.size() == 3) break;
             }
         }
     }
 
-    // Pass the schedule to the model
-    model.addAttribute("schedule", schedule);
-    return "schedule";
-}
-
-    private boolean isAssignedToPreviousDay(
+    private boolean canAssign(
             Developer dev,
-            String currentDay,
-            List<String> weekdays,
-            Map<String, List<Developer>> weekdayAssignments) {
+            WeekDay currentDay,
+            Map<WeekDay, List<Developer>> weekdayAssignments,
+            Map<Developer, Integer> developerAssignments,
+            List<WeekDay> weekdays,
+            int maxDevsPerDay,
+            int maxDaysPerDev) {
 
+        // Check if developer already reached max days
+        if (developerAssignments.get(dev) >= maxDaysPerDev) return false;
+
+        // Check if the developer is already assigned to the previous day
         int currentIndex = weekdays.indexOf(currentDay);
-        if (currentIndex == 0) return false; // No previous day for Monday
+        if (currentIndex > 0) {
+            var previousDay = weekdays.get(currentIndex - 1);
+            if (weekdayAssignments.get(previousDay).contains(dev) || weekdayAssignments.get(currentDay).contains(dev))
+                return false;
+        }
 
-        String previousDay = weekdays.get(currentIndex - 1);
-        return weekdayAssignments.get(previousDay).contains(dev);
+        return true;
     }
 
+
+    private void sendMailToDevs(List<Developer> developers, Map<String, List<Developer>> weekdayAssignments) {
+        developers.forEach(
+                dev -> {
+                    try {
+                        mailService.sendTemplateMail(
+                                dev,
+                                "Weeks Schedule",
+                                weekdayAssignments,
+                                "email-template"
+                        );
+                    } catch (MessagingException | UnsupportedEncodingException e) {
+                        throw new IllegalStateException(e.getMessage(), e);
+                    }
+                }
+        );
+    }
 
 }

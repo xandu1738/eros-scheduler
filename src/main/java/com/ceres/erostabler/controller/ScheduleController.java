@@ -18,8 +18,7 @@ public class ScheduleController {
         try {
             return schedulingService.scheduleDaysOff(model);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new IllegalStateException(e.getMessage());
+            throw new IllegalStateException(e.getMessage(),e);
         }
     }
 }

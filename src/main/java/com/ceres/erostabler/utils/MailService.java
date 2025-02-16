@@ -1,5 +1,6 @@
 package com.ceres.erostabler.utils;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.ceres.erostabler.dto.Developer;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -12,8 +13,11 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 @Service
@@ -23,8 +27,13 @@ public class MailService {
     private final JavaMailSender emailSender;
     private final TemplateEngine templateEngine;
 
-    public void sendTemplateMail(Developer receiver, String subject, Map<String, List<Developer>> schedule, String template) throws MessagingException, UnsupportedEncodingException {
+    public void sendTemplateMail(Developer receiver, String subject, Map<String, List<Developer>> schedule, JSONObject randomQuote,String template) throws MessagingException, UnsupportedEncodingException {
         Context context = new Context();
+
+
+        context.setVariable("quote", randomQuote.getString("quote"));
+        context.setVariable("author", randomQuote.getString("author"));
+        context.setVariable("year", LocalDate.now().getYear());
 
         context.setVariable("name", receiver.name());
         context.setVariable("schedule", schedule);
@@ -38,11 +47,9 @@ public class MailService {
         helper.setTo(receiver.email());
 
         try {
-            Thread thread = new Thread(() -> {
-                emailSender.send(mimeMessage);
-            });
-            thread.start();
-        } catch (Exception e) {
+            emailSender.send(mimeMessage);
+            log.info("Sending email to {}", receiver.email());
+        } catch (Exception  e) {
             throw new RuntimeException(e);
         }
     }

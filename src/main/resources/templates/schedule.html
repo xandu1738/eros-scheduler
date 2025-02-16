@@ -3,12 +3,13 @@
 <head>
     <title>Developer Schedule</title>
     <style>
-        body{
+        body {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
+
         table {
             width: 70%;
             border-collapse: collapse;
@@ -57,5 +58,8 @@
     </tr>
     </tbody>
 </table>
+<p>
+    "<i th:text="${quote}"></i>" - <span th:text="${author}"></span>
+</p>
 </body>
 </html>

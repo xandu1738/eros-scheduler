@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.ceres</groupId>
-    <artifactId>eros-tabler</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>eros-scheduler</artifactId>
+    <version>001</version>
     <name>eros-tabler</name>
     <description>eros-tabler</description>
     <properties>
@@ -47,6 +47,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
     </dependencies>
 

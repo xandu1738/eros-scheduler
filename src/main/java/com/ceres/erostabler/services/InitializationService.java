@@ -17,13 +17,19 @@ public class InitializationService {
         Developer mart = new Developer("Muhimbura Brian Mart", "b.muhimbura@servicecops.com");
         devs.add(mart);
 
+        Developer gogo = new Developer("Ayesiga Gorret", "g.ayesiga@servicecops.com");
+        devs.add(gogo);
+
+        Developer jm = new Developer("John Mark", "johnmark@servicecops.com");
+        devs.add(jm);
+
         Developer blessing = new Developer("Linda Kellen", "lindakellen9@gmail.com");
         devs.add(blessing);
 
         Developer iggy = new Developer("Ignatius Kisekka", "ignatiuskisekka@gmail.com");
         devs.add(iggy);
 
-        Developer praise = new Developer("Praise Aine", "praisekaine04@gmail.com");
+        Developer praise = new Developer("Praise Ainembabazi", "praisekaine04@gmail.com");
         devs.add(praise);
 
         Developer steven = new Developer("Steven Mpawulo", "stevenmpawulo@gmail.com");

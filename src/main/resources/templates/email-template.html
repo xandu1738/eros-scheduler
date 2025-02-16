@@ -165,8 +165,8 @@
 <body>
 <div class="container">
     <div class="header">
-<!--        <img th:src="@{logo.png}"-->
-<!--             alt="Company Logo">-->
+        <!--        <img th:src="@{logo.png}"-->
+        <!--             alt="Company Logo">-->
         <h1>Week's Schedule</h1>
     </div>
 
@@ -197,12 +197,12 @@
             </tbody>
         </table>
         <p>
-            <i>"Challenges are what make life interesting and overcoming them is what makes life meaningful."</i><span>  – Joshua J. Marine</span>
+            "<i th:text="${quote}"></i>" - <span th:text="${author}"></span>
         </p>
     </div>
 
     <div class="footer">
-        <p style="color: #dddddd">&copy; 2024 Ceres. All rights reserved.</p>
+        <p style="color: #dddddd">&copy; <span th:text="${year}"/> Ceres. All rights reserved.</p>
     </div>
 </div>
 </body>

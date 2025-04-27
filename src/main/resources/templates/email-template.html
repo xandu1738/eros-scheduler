@@ -124,19 +124,27 @@
 
         .content {
             padding: 20px;
+            /*background-color: rgba(219, 255, 254, 0.43);*/
+            position: relative;
+        }
+
+        .quote {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tobi {
+            width: 30%;
+            height: auto;
+            z-index: 2;
         }
 
         h1 {
             color: rgba(1, 64, 135, 0.84);
             text-transform: uppercase;
             margin-top: 10px;
-        }
-
-        .details {
-            margin-top: 20px;
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
         }
 
         .details p {
@@ -165,8 +173,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <!--        <img th:src="@{logo.png}"-->
-        <!--             alt="Company Logo">-->
+        <!--        <img src="../static/logo.png" th:src="@{logo.png}" alt="Company Logo">-->
         <h1>Week's Schedule</h1>
     </div>
 
@@ -196,8 +203,12 @@
             </tr>
             </tbody>
         </table>
-        <p>
-            "<i th:text="${quote}"></i>" - <span th:text="${author}"></span>
+        <p class="quote">
+            <span class="quote-text">
+                <i th:text="${quote}"></i><br/><br/>
+                - <span th:text="${author}"></span>
+            </span>
+            <img src="../static/tobirama.png" th:src="@{tobirama.png}" class="tobi" alt="Company Logo">
         </p>
     </div>
 

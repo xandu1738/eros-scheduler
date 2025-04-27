@@ -47,6 +47,27 @@ public class InitializationService {
         Developer zeresi = new Developer("Biira Zeresi", "biirazeresi555@gmail.com");
         devs.add(zeresi);
 
+        Developer bogere = new Developer("Bogere Moses", "b.bogere@servicecops.com");
+        devs.add(bogere);
+
+        Developer samNtunarabo = new Developer("Samuel Ntunarabo", "s.nturanabo@servicecops.com");
+        devs.add(samNtunarabo);
+
+        Developer sham = new Developer("Nakayiza Shamim", "nakayiza2shamim@gmail.com");
+        devs.add(sham);
+
+        Developer probuse = new Developer("Nimukama Probuse", "etwin.himself@gmail.com");
+        devs.add(probuse);
+
+        Developer jet = new Developer("Tumusiime Ezra Jr", "ezrajet9@gmail.com");
+        devs.add(jet);
+
+        Developer favour = new Developer("Kiiza Favour", "f.kiiza@servicecops.com");
+        devs.add(favour);
+
+        Developer bidhinski = new Developer("Bidha Brian", "b.bidha@servicecops.com");
+        devs.add(bidhinski);
+
         return devs;
     }
 

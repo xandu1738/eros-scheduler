@@ -53,17 +53,13 @@ public class SchedulingService {
         String quote = "Challenges are what make life interesting and overcoming them is what makes life meaningful";
         String author = "Joshua J. Marine";
 
-        var randomQuoteList = quotesService.getRandomQuote();
-        var randomQuote = new JSONObject();
-
-        if (!randomQuoteList.isEmpty()) {
-            randomQuote = JSON.parseObject(JSON.toJSONString(randomQuoteList.get(0)));
-        }
+        var randomQuote = quotesService.randomAncientQuote();
 
         if (!randomQuote.isEmpty()) {
-            quote = randomQuote.getString("q");
-            author = randomQuote.getString("a");
+            quote = randomQuote.getString("quote");
+            author = randomQuote.getString("author");
         }
+
         JSONObject quoteObject = new JSONObject();
         quoteObject.put("quote", quote);
         quoteObject.put("author", author);
@@ -75,7 +71,7 @@ public class SchedulingService {
         // Days of the week
         List<WeekDay> weekDays = new ArrayList<>(new HashSet<>(initializationService.getWeekDays()));
 
-        // in case developers list is empty
+        // in case the developers' list is empty
         if (developers.isEmpty()) {
             throw new IllegalStateException("Please provide list of staff.");
         }
@@ -112,22 +108,22 @@ public class SchedulingService {
     private static List<Developer> getJuniorDevelopers(List<Developer> devs) {
         // Devs Minus Supes
         List<Developer> jrs = devs.stream()
-                .filter(d -> !d.name().contains("Mart"))
+//                .filter(d -> !d.name().contains("Mart"))
                 .filter(d -> !d.name().contains("John Mark"))
-                .filter(d -> !d.name().contains("Gorret"))
+//                .filter(d -> !d.name().contains("Gorret"))
                 .toList();
 
         // Minus any repetitions
         return new ArrayList<>(new HashSet<>(jrs));
     }
 
-    @Scheduled(cron = "0 0 15 * * 7")
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 24 * 7)
     public void makeSchedule() {
         List<Developer> devs = initializationService.getDevs();
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         Map<String, List<Developer>> waList = assignDevelopers(getJuniorDevelopers(devs));
 
-        sendMailToDevs(devs, waList,executor);
+        sendMailToDevs(devs, waList, executor);
     }
 
     private void enforceMinimumAssignments(
@@ -157,20 +153,21 @@ public class SchedulingService {
         Collections.shuffle(developers);
 
         final int MAX_DEVS_PER_DAY = 2;
-        final int MAX_DAYS_PER_DEV = 1;
+//        final int MAX_DAYS_PER_DEV = 1;
 
         ThreadLocalRandom random = ThreadLocalRandom.current();
 
         for (WeekDay day : weekdays) {
             log.info("****** {} ******", day.name());
-            int maxDevsForDay = (day.name().equalsIgnoreCase("Monday") || day.name().equalsIgnoreCase("Tuesday"))
-                    ? 1
-                    : MAX_DEVS_PER_DAY;
+//            int maxDevsForDay = (day.name().equalsIgnoreCase("Monday") || day.name().equalsIgnoreCase("Tuesday"))
+//                    ? 1
+//                    : MAX_DEVS_PER_DAY;
+            int maxDevsForDay = MAX_DEVS_PER_DAY;
             List<Developer> assignedDevs = weekdayAssignments.get(day);
 
             log.info("[+] Max devs {}", maxDevsForDay);
 
-            // Attempts to limit number of attempts to execute canAssign to avoid infinite loop
+            // Attempts to limit the number of attempts to execute canAssign to avoid infinite loop
             int attempts = 0;
 
             // Continue until the devs per day condition is satisfied
@@ -178,7 +175,7 @@ public class SchedulingService {
                 Developer randomDev = developers.get(random.nextInt(developers.size()));
                 log.info("[+] Assigning {}\n\n", randomDev.name());
 
-                if (canAssign(randomDev, day, weekdayAssignments, developerAssignments, weekdays, maxDevsForDay, MAX_DAYS_PER_DEV)) {
+                if (canAssign(randomDev, day, weekdayAssignments, developerAssignments, weekdays, maxDevsForDay)) {
                     assignedDevs.add(randomDev);
                     // Get or default handles unassigned devs gracefully
                     developerAssignments.put(randomDev, developerAssignments.getOrDefault(randomDev, 0) + 1);
@@ -194,13 +191,12 @@ public class SchedulingService {
             Map<WeekDay, List<Developer>> weekdayAssignments,
             Map<Developer, Integer> developerAssignments,
             List<WeekDay> weekdays,
-            int maxDevsPerDay,
-            int maxDaysPerDev) {
+            int maxDevsPerDay) {
 
         log.info("[+] Checking if {} is assigned", dev.name());
-        // Check if developer already reached their max allowed days
+        // Check if a developer already reached their max-allowed days
         Integer devAssignments = developerAssignments.getOrDefault(dev, 0);
-        if (devAssignments >= maxDaysPerDev) {
+        if (devAssignments >= 2) {
             return false;
         }
 
@@ -219,7 +215,7 @@ public class SchedulingService {
             WeekDay previousDay = weekdays.get(currentIndex - 1);
             List<Developer> previousDayAssignments = weekdayAssignments.getOrDefault(previousDay, new ArrayList<>());
 
-            // Ensure developer is not assigned to both previous and current day
+            // Ensure the developer is not assigned to both previous and current day
             log.info("[+] Status {}", String.valueOf(!previousDayAssignments.contains(dev) && !currentDayAssignments.contains(dev)).toUpperCase());
             return !previousDayAssignments.contains(dev) && !currentDayAssignments.contains(dev);
         }
@@ -233,24 +229,21 @@ public class SchedulingService {
 //        CountDownLatch latch = new CountDownLatch(developers.size());
         try {
             developers.forEach(
-                    dev -> {
-                        executor.submit(
-                                () -> {
-                                    try {
-                                        mailService.sendTemplateMail(
-                                                dev,
-                                                "Weeks Schedule",
-                                                weekdayAssignments,
-                                                resolveQuote(),
-                                                "email-template"
-                                        );
-                                    } catch (MessagingException | UnsupportedEncodingException e) {
-                                        throw new RuntimeException(e.getMessage(), e);
-                                    }
+                    dev -> executor.submit(
+                            () -> {
+                                try {
+                                    mailService.sendTemplateMail(
+                                            dev,
+                                            "Weeks Schedule",
+                                            weekdayAssignments,
+                                            resolveQuote(),
+                                            "email-template"
+                                    );
+                                } catch (MessagingException | UnsupportedEncodingException e) {
+                                    throw new RuntimeException(e.getMessage(), e);
                                 }
-                        );
-
-                    }
+                            }
+                    )
             );
         } finally {
             log.info("[+] Initiating shut down...");

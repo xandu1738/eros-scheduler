@@ -16,8 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 @Service
@@ -29,7 +27,6 @@ public class MailService {
 
     public void sendTemplateMail(Developer receiver, String subject, Map<String, List<Developer>> schedule, JSONObject randomQuote,String template) throws MessagingException, UnsupportedEncodingException {
         Context context = new Context();
-
 
         context.setVariable("quote", randomQuote.getString("quote"));
         context.setVariable("author", randomQuote.getString("author"));

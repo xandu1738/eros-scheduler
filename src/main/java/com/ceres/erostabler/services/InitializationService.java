@@ -68,6 +68,9 @@ public class InitializationService {
         Developer bidhinski = new Developer("Bidha Brian", "b.bidha@servicecops.com");
         devs.add(bidhinski);
 
+        Developer akora = new Developer("Akora Solomon", "0701901774aka@gmail.com");
+        devs.add(akora);
+
         return devs;
     }
 
